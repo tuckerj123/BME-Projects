@@ -40,7 +40,9 @@ event_times_V = t[event_samples_V]
 ecg_voltage_N = ecg_voltage[event_samples_N]
 ecg_voltage_V = ecg_voltage[event_samples_V]
 
-p1m.plot_events(event_times_N, event_types, event_times_N, ecg_voltage_N)
+p1m.plot_events(event_times_N, event_types[0], event_times_N, ecg_voltage_N)
+p1m.plot_events(event_times_V, event_types[1], event_times_V, ecg_voltage_V)
+
 
 #find the x limits of 2 Normal heartbeats and 1 arrythmia with panning on the figure
 x_minimum = 2406.5
@@ -48,7 +50,43 @@ x_maximum = 2409.5
 plt.xlim(x_minimum, x_maximum)
 
 #%%Extract Trials 
-e
-vent_time_length = 1 # each event signal is 1 second long
+event_time_length = 1 # each event signal is 1 second long
 
-p1m.extract_trials(ecg_voltage, , fs*event_time_length)
+# Determine how many samples until the start of each sample
+dt = 1/fs
+time_before_label = 0.5
+samples_to_start = int(time_before_label / dt)
+number_of_samples = fs*event_time_length 
+
+#create an array of all the start times of each signals
+sample_N_start = event_samples_N - samples_to_start
+sample_V_start = event_samples_V - samples_to_start
+
+# extract all the arrays into a 2d array
+trials_N_events = p1m.extract_trials(ecg_voltage, sample_N_start, number_of_samples)
+trials_V_events = p1m.extract_trials(ecg_voltage, sample_V_start, number_of_samples)
+
+#check if the shape matches expectations
+if trials_N_events.shape == (len(sample_N_start), number_of_samples):
+    print("The size is expected")
+if trials_V_events.shape == (len(sample_V_start), number_of_samples):
+    print("The size is expected")
+
+#change time array so t=0 is at the time of the label
+trial_to_plot = 0
+trial_time_array = np.arange(time_before_label, time_before_label + event_time_length, dt)
+
+#create plot of one trial per event type
+plt.figure(2, clear=True)
+plt.plot(trial_time_array, trials_N_events[trial_to_plot], label="Normal Heartbeat")
+plt.plot(trial_time_array, trials_V_events[trial_to_plot], label="Arrythmia")
+
+#annotate
+plt.legend(loc=1)
+plt.title(f"Normal Heartbeat {trial_to_plot +1} compared to Arrythmia {trial_to_plot +1}")
+plt.xlabel('Time (s)')
+plt.ylabel("Voltage (V)")
+plt.grid()
+
+
+
