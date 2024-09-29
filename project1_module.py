@@ -8,6 +8,8 @@ Created on Tue Sep 24 11:13:13 2024
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+
 def load_data_arrays(input_file):
 
     data = np.load(input_file)
@@ -35,25 +37,30 @@ def plot_raw_data(signal_voltage, signal_time, units="V", title=""):
     
 def plot_events(label_samples, label_symbols, signal_time, signal_voltage):
     
-    #divide samples by the labels in event_types
-    event_types = np.unique(label_symbols)
-    event_samples_N = label_samples[label_symbols == event_types[0]]
-    event_samples_V = label_samples[label_symbols == event_types[1]]
     
-    #seperate times by the samples
-    event_times_N = signal_time[event_samples_N]
-    event_times_V = signal_time[event_samples_V]
     
-    #seperate voltages by the samples
-    event_signals_N = signal_voltage[event_samples_N]
-    event_signals_V = signal_voltage[event_samples_V]
+    #plot dots for each event in the signal
+    plt.figure(1)
+    plt.plot(signal_time, event_signals_N, label="Normal Events", linestyle="", marker="o")
+    plt.plot(event_times_V, event_signals_V, label="Arrythmia Events", linestyle="", marker="o")
 
+    #add a legend
+    plt.legend(loc=4)
     
-    print(len(event_samples_N))
+def extract_trials(signal_voltage, trial_start_samples, trial_sample_count):
+    trials = np.zeros((len(signal_voltage),trial_sample_count))
     
     
     
-
+    print(trials)
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
