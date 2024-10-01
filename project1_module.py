@@ -54,19 +54,16 @@ def extract_trials(signal_voltage, trial_start_samples, trial_sample_count):
         trial_start = trial_start_samples[trial_index]
         trial_end = trial_start_samples[trial_index]+trial_sample_count
 
+    #Remove any trials that are not complete
         # first few samples have negative indices, this makes any negative indices = 0
         if trial_start <0:
-            samples_index = np.arange(trial_start, trial_end,1)
-            is_index_negative = samples_index <0
-            samples_index[is_index_negative] = 0
-            trials[trial_index, :] = signal_voltage[samples_index]
+            samples = np.full(trial_sample_count,np.nan)
+            trials[trial_index, :] = samples
         
         #last few trials have end indices that are too big, this sets those indices = -1 
         elif trial_end > len(signal_voltage):  
-            samples_index = np.arange(trial_start, trial_end,1)
-            is_index_too_big = trial_end > len(signal_voltage)
-            samples_index[is_index_too_big] = -1
-            trials[trial_index, :] = signal_voltage[samples_index]
+            samples = np.full(trial_sample_count,np.nan)
+            trials[trial_index, :] = samples
         
         #if the start and end indices are within the range, just replace the array
         else:
