@@ -5,6 +5,7 @@ Created on Tue Sep 24 10:38:29 2024
 
 @author: tuckerjohnsen
 """
+
 # Import Data
 
 # Import Packages
@@ -25,6 +26,9 @@ t = 1/fs * samples
 #%% Plot Raw signal
 
 p1m.plot_raw_data(ecg_voltage, t, title=f"ECG Raw Data for Subject {subject_id}")
+
+# Save plot
+plt.savefig('raw_data_plot.png')
 
 #%%Plot event markers on the existing ECG
 #divide samples by the labels in event_types
@@ -48,6 +52,9 @@ p1m.plot_events(event_times_V, event_types[1], event_times_V, ecg_voltage_V)
 x_minimum = 2406.5
 x_maximum = 2409.5
 plt.xlim(x_minimum, x_maximum)
+
+# Save plot
+plt.savefig('labeled_raw_data_plot.png')
 
 #%%Extract Trials 
 event_time_length = 1 # each event signal is 1 second long
@@ -73,7 +80,7 @@ if trials_V_events.shape == (len(sample_V_start), number_of_samples):
     print("The size is expected")
 
 #change time array so t=0 is at the time of the label
-trial_to_plot = 0
+trial_to_plot = 1
 trial_time_array = np.arange(time_before_label, time_before_label + event_time_length, dt)
 
 #create plot of one trial per event type
@@ -84,9 +91,49 @@ plt.plot(trial_time_array, trials_V_events[trial_to_plot], label="Arrythmia")
 #annotate
 plt.legend(loc=1)
 plt.title(f"Normal Heartbeat {trial_to_plot +1} compared to Arrythmia {trial_to_plot +1}")
-plt.xlabel('Time (s)')
+plt.xlabel("Time (s)")
 plt.ylabel("Voltage (V)")
 plt.grid()
+
+# Save plot
+plt.savefig('extracted_trial_plot.png')
+
+#%% Plot Trial Means
+
+trial_duration_seconds = np.arange(time_before_label, time_before_label + event_time_length, dt)
+
+symbols, trial_time, mean_trial_signal = p1m.plot_mean_and_std_trials(ecg_voltage, label_samples, label_symbols, trial_duration_seconds, fs, units, title=f"Mean ECG for Subject {subject_id}")
+
+# Save plot
+plt.savefig('event_mean_with_std_plot.png')
+
+#%% Saving Array and Plots
+p1m.save_means(symbols, trial_time, mean_trial_signal, out_filename = f"ecg_means_{subject_id}.npz")
+
+# Test Saved Data
+infile = "ecg_means_e0103.npz"
+loaded_data = np.load(infile)
+loaded_symbols = loaded_data['arr_0']
+loaded_times = loaded_data['arr_1']
+loaded_means = loaded_data['arr_2']
+if np.array_equal(loaded_symbols, symbols):
+    print("Loaded Matches Saved")
+else:
+    print("No Match")
+if np.array_equal(loaded_times, trial_time):
+    print("Loaded Matches Saved")
+else:
+    print("No Match")
+if np.array_equal(loaded_means, mean_trial_signal):
+    print("Loaded Matches Saved")
+else:
+    print("No Match")
+
+
+
+
+
+
 
 
 
