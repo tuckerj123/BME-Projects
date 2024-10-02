@@ -5,16 +5,16 @@ Created on Tue Sep 24 11:13:13 2024
 
 @author: tuckerjohnsen
 """
+#import libraries
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-
 def load_data_arrays(input_file):
-
+    #load data and show the different variables
     data = np.load(input_file)
     print(data.files)
     
+    #declare variables with the same names as the npz file
     ecg_voltage = data['ecg_voltage']
     fs = data['fs']
     label_samples = data['label_samples']
@@ -22,6 +22,7 @@ def load_data_arrays(input_file):
     subject_id = data['subject_id']
     electrode = data['electrode']
     units = data['units']
+    
     return ecg_voltage, fs, label_samples, label_symbols, subject_id, electrode, units
 
 def plot_raw_data(signal_voltage, signal_time, units="V", title=""):
@@ -31,19 +32,18 @@ def plot_raw_data(signal_voltage, signal_time, units="V", title=""):
 
     #annotate
     plt.xlabel('Time (s)')
-    plt.ylabel(f"Voltage ({units})") # arbitrary units
+    plt.ylabel(f"Voltage ({units})")
     plt.grid()
     plt.title(title)
     plt.show()
     
 def plot_events(label_samples, label_symbols, signal_time, signal_voltage):
-    
-    #plot dots for each event in the signal
+    #plot dots for each event in the signal on the same plot done in plot_raw_data()
     plt.figure(1)
     plt.plot(signal_time, signal_voltage, label=f"{label_symbols} Events", linestyle="", marker="o")
 
     #add a legend
-    plt.legend(loc=4)
+    plt.legend(loc=4) #4 corresponds to correct location
     
 def extract_trials(signal_voltage, trial_start_samples, trial_sample_count):
     # initialize array for sampling
@@ -55,47 +55,47 @@ def extract_trials(signal_voltage, trial_start_samples, trial_sample_count):
         trial_start = trial_start_samples[trial_index]
         trial_end = trial_start_samples[trial_index]+trial_sample_count
 
-    #Remove any trials that are not complete
-        # first few samples have negative indices, this makes any negative indices = 0
+    #if start index is negative, then signal is not complete and should be replaced with nan values
         if trial_start <0:
             samples = np.full(trial_sample_count,np.nan)
             trials[trial_index, :] = samples
         
-        #last few trials have end indices that are too big, this sets those indices = -1 
+    #if end index is outside length of file, then signal is not complete and should be replaced with nan values
         elif trial_end > len(signal_voltage):  
             samples = np.full(trial_sample_count,np.nan)
             trials[trial_index, :] = samples
         
-        #if the start and end indices are within the range, just replace the array
+        #if the start and end indices are within the range, just replace the array with the signals for the trial
         else:
             trials[trial_index,:] = signal_voltage[trial_start:trial_end]
     
     return trials
     
 def plot_mean_and_std_trials(signal_voltage, label_samples, label_symbols, trial_duration_seconds, fs, units, title):
-    
     # Create figure
     plt.figure(2, clear = True)
     plt.grid()
     
+    #find what different event types are
     symbols = np.unique(label_symbols)
     
-    event_time_length = 1 # each event signal is 1 second long
-
-    # Determine how many samples until the start of each sample
-    dt = 1/fs
-    time_before_label = 0.5
-    samples_to_start = int(time_before_label / dt)
-    number_of_samples = fs*event_time_length 
-    trial_time = np.arange(time_before_label, time_before_label + event_time_length, dt)
+    # determine number of samples in each trial
+    dt = 1/fs #how much time passes between each index
+    time_before_label = trial_duration_seconds /2 # centers trial at time = 0s
+    samples_to_start = int(time_before_label / dt) #turn time into number of indices before the label
+    number_of_samples = fs*trial_duration_seconds #determine how many samples in each trial
+    
+    #create time array for all times at the indices
+    trial_time = np.arange(-time_before_label, -time_before_label + trial_duration_seconds, dt)
     
     # Create new array to store mean trial signals
     mean_trial_signal = np.zeros((len(symbols), number_of_samples))
     
     # Find event type trial means and standard deviation arrays
-    for event_type in range(len(symbols)):
-        event_samples = label_samples[label_symbols == symbols[event_type]]
-        sample_start = event_samples - samples_to_start
+    for event_type_index in range(len(symbols)):
+        # FInd the signals of all the trials of the specific event type
+        event_samples = label_samples[label_symbols == symbols[event_type_index]]
+        sample_start = event_samples - samples_to_start 
         trials = extract_trials(signal_voltage, sample_start, number_of_samples)
     
         # Data Analysis
@@ -103,15 +103,15 @@ def plot_mean_and_std_trials(signal_voltage, label_samples, label_symbols, trial
         trial_std = np.nanstd(trials, axis = 0)
         
         # Store Data for returning
-        mean_trial_signal[event_type] = trial_mean
+        mean_trial_signal[event_type_index] = trial_mean
         
         # Find error below and above mean
         error_below_mean = trial_mean - trial_std
         error_above_mean = trial_mean + trial_std
     
         # Plot mean with error bars
-        plt.plot(trial_duration_seconds, trial_mean, label = f"{symbols[event_type]} trial mean", linewidth = 2)
-        plt.fill_between(trial_duration_seconds, error_below_mean, error_above_mean, alpha = 0.3, label = f"{event_type} trial mean +/- stddev")
+        plt.plot(trial_time, trial_mean, label = f"{symbols[event_type_index]} trial mean", linewidth = 2)
+        plt.fill_between(trial_time, error_below_mean, error_above_mean, alpha = 0.3, label = f"{symbols[event_type_index]} trial mean +/- stddev")
         
         # Annotate
         plt.title(title)

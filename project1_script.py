@@ -1,12 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+project1_script.py
+
+Python script to analyze heart activity over a set time from an ECG
+Then complete data analysis and visualization of beats of different types
+that may be indicative of health effects.
+
+Tucker Johnston & Ryan Siegel
+
+ChatGPT was utilized to explain how to take element-wise means
+TAs (Haorui Sun) provided recommendation to skip data from the trials that are incomplete
+
 Created on Tue Sep 24 10:38:29 2024
 
 @author: tuckerjohnsen
 """
 
-# Import Data
+# Import necessary data and libraries
 
 # Import Packages
 import numpy as np
@@ -15,22 +26,20 @@ import project1_module as p1m
 
 # Loading data into arrays
 input_file = 'ecg_e0103_half1.npz'
-    
 ecg_voltage, fs, label_samples, label_symbols, subject_id, electrode, units = p1m.load_data_arrays(input_file)
 
 # convert sample array to time
-
 samples = np.arange(len(ecg_voltage))
 t = 1/fs * samples
 
 #%% Plot Raw signal
-
 p1m.plot_raw_data(ecg_voltage, t, title=f"ECG Raw Data for Subject {subject_id}")
 
 # Save plot
 plt.savefig('raw_data_plot.png')
 
 #%%Plot event markers on the existing ECG
+
 #divide samples by the labels in event_types
 event_types = np.unique(label_symbols)
 event_samples_N = label_samples[label_symbols == event_types[0]]
@@ -44,6 +53,7 @@ event_times_V = t[event_samples_V]
 ecg_voltage_N = ecg_voltage[event_samples_N]
 ecg_voltage_V = ecg_voltage[event_samples_V]
 
+#plot signals of both event types
 p1m.plot_events(event_times_N, event_types[0], event_times_N, ecg_voltage_N)
 p1m.plot_events(event_times_V, event_types[1], event_times_V, ecg_voltage_V)
 
@@ -81,7 +91,7 @@ if trials_V_events.shape == (len(sample_V_start), number_of_samples):
 
 #change time array so t=0 is at the time of the label
 trial_to_plot = 1
-trial_time_array = np.arange(time_before_label, time_before_label + event_time_length, dt)
+trial_time_array = np.arange(-time_before_label, -time_before_label + event_time_length, dt)
 
 #create plot of one trial per event type
 plt.figure(2, clear=True)
@@ -99,9 +109,9 @@ plt.grid()
 plt.savefig('extracted_trial_plot.png')
 
 #%% Plot Trial Means
+trial_duration_seconds = 1 #how many seconds in each trial
 
-trial_duration_seconds = np.arange(time_before_label, time_before_label + event_time_length, dt)
-
+#plot wrapper function of mean and std
 symbols, trial_time, mean_trial_signal = p1m.plot_mean_and_std_trials(ecg_voltage, label_samples, label_symbols, trial_duration_seconds, fs, units, title=f"Mean ECG for Subject {subject_id}")
 
 # Save plot
