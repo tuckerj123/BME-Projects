@@ -303,6 +303,7 @@ def save_means(symbols, trial_time, mean_trial_signal, out_filename = 'ecg_means
     None.
 
     """
+    
     np.savez(out_filename, symbols, trial_time, mean_trial_signal)
     return
     
