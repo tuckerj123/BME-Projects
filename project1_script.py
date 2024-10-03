@@ -7,7 +7,7 @@ Python script to analyze heart activity over a set time from an ECG
 Then complete data analysis and visualization of beats of different types
 that may be indicative of health effects.
 
-Tucker Johnston & Ryan Siegel
+Tucker Johnsen & Ryan Siegel
 
 ChatGPT was utilized to explain how to take element-wise means
 TAs (Haorui Sun) provided recommendation to skip data from the trials that are incomplete
@@ -102,7 +102,7 @@ plt.plot(trial_time_array, trials_V_events[trial_to_plot], label="Arrythmia")
 plt.legend(loc=1)
 plt.title(f"Normal Heartbeat {trial_to_plot +1} compared to Arrythmia {trial_to_plot +1}")
 plt.xlabel("Time (s)")
-plt.ylabel("Voltage (V)")
+plt.ylabel("Voltage (mV)")
 plt.grid()
 
 # Save plot
@@ -138,6 +138,15 @@ if np.array_equal(loaded_means, mean_trial_signal):
     print("Loaded Matches Saved")
 else:
     print("No Match")
+
+
+
+
+
+
+
+
+
 
 
 
